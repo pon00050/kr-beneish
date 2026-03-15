@@ -1,0 +1,3 @@
+{
+  "userIgnoreFilters": ["src", "tests", "data", ".venv", ".github", ".pytest_cache"]
+}
