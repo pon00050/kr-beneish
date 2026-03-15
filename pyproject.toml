@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "kr-beneish"
@@ -38,11 +38,11 @@ Homepage = "https://github.com/pon00050/kr-beneish"
 Repository = "https://github.com/pon00050/kr-beneish"
 Issues = "https://github.com/pon00050/kr-beneish/issues"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/kr_beneish"]
 
-[tool.setuptools.package-data]
-"kr_beneish" = ["data/*.csv"]
+[tool.uv]
+compile-bytecode = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
