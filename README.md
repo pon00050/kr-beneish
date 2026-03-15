@@ -13,6 +13,13 @@ scores = compute_mscores(df)
 flagged = scores[scores["flag"]]
 ```
 
+## Documentation
+
+- [`docs/korean-ifrs-adjustments.md`](docs/korean-ifrs-adjustments.md) — why and how the model is adjusted for K-IFRS
+- [`docs/calibration.md`](docs/calibration.md) — Korean bootstrap threshold, TATA sign flip, labeled dataset methodology
+- [`docs/design-decisions.md`](docs/design-decisions.md) — API design rationale
+- [`docs/limitations.md`](docs/limitations.md) — known false positive patterns and structural limitations
+
 ## What it does
 
 Computes the [Beneish (1999)](https://doi.org/10.2469/faj.v55.n5.2296) 8-variable M-Score for each company-year in a DataFrame. Returns the 8 components plus a composite score and a binary flag.
