@@ -10,13 +10,13 @@ from kr_beneish import compute_mscores, REQUIRED_COLUMNS, BENEISH_THRESHOLD
 _EXPECTED_OUTPUT_COLUMNS = {
     "corp_code", "year",
     "dsri", "gmi", "aqi", "sgi", "depi", "sgai", "lvgi", "tata",
-    "m_score", "flag",
+    "m_score", "flag", "zone",
 }
 
 
 class TestOutputSchema:
     def test_output_has_correct_columns(self, minimal_df):
-        """compute_mscores returns exactly the 12 documented output columns."""
+        """compute_mscores returns exactly the 13 documented output columns."""
         result = compute_mscores(minimal_df)
         assert set(result.columns) == _EXPECTED_OUTPUT_COLUMNS
 
@@ -87,6 +87,51 @@ class TestThresholdParam:
         result_default = compute_mscores(minimal_df)
         result_explicit = compute_mscores(minimal_df, threshold=BENEISH_THRESHOLD)
         pd.testing.assert_frame_equal(result_default, result_explicit)
+
+
+class TestZoneColumn:
+    def test_zone_values_are_valid(self, minimal_df):
+        """zone column contains only valid values."""
+        result = compute_mscores(minimal_df)
+        valid = {"clean", "caution", "flagged", None}
+        for v in result["zone"]:
+            assert v in valid, f"Unexpected zone value: {v!r}"
+
+    def test_zone_clean_below_minus_two(self, minimal_df):
+        """M-Score < -2.00 yields zone='clean'."""
+        # TEST001 M-Score ~ -2.26 → clean
+        result = compute_mscores(minimal_df)
+        row = result[result["year"] == 2020].iloc[0]
+        assert row["zone"] == "clean", f"Expected clean, got {row['zone']!r} (m_score={row['m_score']:.4f})"
+
+    def test_zone_flagged_above_minus_178(self, minimal_df):
+        """M-Score > -1.78 yields zone='flagged'."""
+        # Inflate receivables so DSRI >> 1, pushing m_score well above -1.78
+        df = minimal_df.copy()
+        df.loc[df["year"] == 2020, "receivables"] = 900  # DSRI ≈ 8.3 → m_score ≈ +3
+        result = compute_mscores(df)
+        row = result[result["year"] == 2020].iloc[0]
+        assert row["zone"] == "flagged", f"Expected flagged, got {row['zone']!r} (m_score={row['m_score']:.4f})"
+
+    def test_zone_none_when_m_score_nan(self, minimal_df):
+        """zone=None when m_score is NaN (first-year row excluded from output,
+        but internal NaN rows have zone=None)."""
+        # Force >2 core nulls to get NaN m_score in the output row
+        df = minimal_df.copy()
+        df.loc[df["year"] == 2020, "receivables"] = None
+        df.loc[df["year"] == 2020, "net_income"] = None
+        df.loc[df["year"] == 2020, "depreciation"] = None
+        df.loc[df["year"] == 2019, "depreciation"] = None
+        result = compute_mscores(df)
+        row = result[result["year"] == 2020].iloc[0]
+        assert row["zone"] is None, f"Expected None, got {row['zone']!r}"
+
+    def test_zone_independent_of_threshold(self, minimal_df):
+        """zone uses fixed Beneish boundaries, not the threshold parameter."""
+        result_default = compute_mscores(minimal_df)
+        result_strict = compute_mscores(minimal_df, threshold=-2.45)
+        # M-Score ~ -2.26: zone is 'clean' in both cases regardless of threshold
+        assert result_default.iloc[0]["zone"] == result_strict.iloc[0]["zone"]
 
 
 class TestInputValidation:

@@ -9,6 +9,14 @@ BENEISH_THRESHOLD: float = -1.78
 
 _CORE_COMPONENTS = ["dsri", "aqi", "sgi", "depi", "tata"]
 
+# Fixed Beneish zone boundaries (independent of threshold parameter).
+# zone="clean"   when m_score < -2.00
+# zone="caution" when -2.00 <= m_score <= -1.78
+# zone="flagged" when m_score > -1.78
+# zone=None      when m_score is NaN
+_ZONE_LOWER: float = -2.00
+_ZONE_UPPER: float = BENEISH_THRESHOLD  # same value; aliased to prevent silent drift
+
 
 def compute_mscore(
     df: pd.DataFrame,
@@ -30,6 +38,12 @@ def compute_mscore(
     - GMI and SGAI: used directly; already set to 1.0 for nature-method
       companies in _components.py.
     - flag = False when m_score = NaN.
+
+    Zone column (fixed Beneish boundaries, independent of threshold):
+    - "clean"   : m_score < -2.00
+    - "caution" : -2.00 <= m_score <= -1.78
+    - "flagged" : m_score > -1.78
+    - None      : m_score is NaN
     """
     df = df.copy()
 
@@ -55,5 +69,15 @@ def compute_mscore(
     df.loc[df["revenue_l"].isna(), "m_score"] = np.nan
 
     df["flag"] = df["m_score"].notna() & (df["m_score"] > threshold)
+
+    df["zone"] = np.select(
+        [
+            df["m_score"].isna(),
+            df["m_score"] < _ZONE_LOWER,
+            df["m_score"] <= _ZONE_UPPER,
+        ],
+        [None, "clean", "caution"],
+        default="flagged",
+    )
 
     return df

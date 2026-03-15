@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import pandas as pd
 
 REQUIRED_COLUMNS: list[str] = [
@@ -22,6 +24,25 @@ REQUIRED_COLUMNS: list[str] = [
 ]
 
 
+def _warn_fs_type_inconsistency(df: pd.DataFrame) -> None:
+    """Warn if any company has mixed fs_type values across years.
+
+    Mixing CFS and OFS rows for the same company produces meaningless
+    year-over-year ratios because the T and T-1 balance sheets cover
+    different consolidation scopes.
+    """
+    counts = df.groupby("corp_code")["fs_type"].nunique()
+    mixed = counts[counts > 1].index.tolist()
+    if mixed:
+        warnings.warn(
+            f"Mixed fs_type (CFS/OFS) detected for {len(mixed)} company(s): "
+            f"{mixed}. Year-over-year ratios are unreliable when fs_type "
+            "changes across years. Use CFS throughout for best results.",
+            UserWarning,
+            stacklevel=3,
+        )
+
+
 def validate_input(df: pd.DataFrame) -> None:
     """Raise ValueError if df is missing required columns or is empty."""
     if not isinstance(df, pd.DataFrame):
@@ -34,3 +55,4 @@ def validate_input(df: pd.DataFrame) -> None:
             f"Input DataFrame is missing required columns: {missing}. "
             f"All required columns: {REQUIRED_COLUMNS}"
         )
+    _warn_fs_type_inconsistency(df)

@@ -6,6 +6,7 @@
 | [`calibration.md`](calibration.md) | Threshold calibration on Korean data, TATA sign flip finding, winsorization rationale, Lasso/RF feature importance, labeled dataset methodology |
 | [`design-decisions.md`](design-decisions.md) | The 5 API design decisions: input contract, single public function, threshold parameter, labeled dataset inclusion, output scope |
 | [`limitations.md`](limitations.md) | Known false positive patterns: biotech/pharma, first-year listings, TATA sign flip, nature-method blind spot, small sample gaps, CFS/OFS mixing |
+| [`end-to-end-run.md`](end-to-end-run.md) | First end-to-end execution against synthetic data: full results table, component-level interpretation, pipeline behaviour confirmed |
 
 ## Quick orientation
 

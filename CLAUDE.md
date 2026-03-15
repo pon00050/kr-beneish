@@ -2,6 +2,15 @@
 
 Standalone PyPI library: Beneish M-Score for Korean IFRS companies.
 
+## Ecosystem
+
+Part of the Korean forensic accounting toolkit.
+- Hub: `../forensic-accounting-toolkit/` | [GitHub](https://github.com/pon00050/forensic-accounting-toolkit)
+- Task board: https://github.com/users/pon00050/projects/1
+- Role: Foundation library
+- Depends on: none
+- Consumed by: kr-forensic-finance (Beneish M-Score computation in Phase 1 analysis)
+
 ## Common Commands
 
 ```bash

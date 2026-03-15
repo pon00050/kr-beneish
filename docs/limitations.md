@@ -103,8 +103,12 @@ Korean listed companies file both consolidated (CFS) and separate/parent-only
 
 **This library's position:**
 The input column `fs_type` accepts `"CFS"` or `"OFS"` but does not adjust
-any formula based on the statement type. The caller is responsible for ensuring
-consistency: either use CFS throughout or OFS throughout, not a mix.
+any formula based on the statement type. If a company's rows contain mixed
+`fs_type` values across years (e.g., CFS in 2019 and OFS in 2020), the library
+emits a `UserWarning` naming the affected companies, because the T/T-1
+year-over-year ratios will span two different consolidation scopes and produce
+unreliable results. The computation proceeds regardless; the warning is a
+data quality signal, not an error.
 
 **Best practice:** Use CFS (consolidated) when available, as it more accurately
 represents the economic entity. OFS may be appropriate for holding-company

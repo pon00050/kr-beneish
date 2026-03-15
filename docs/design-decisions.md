@@ -105,17 +105,22 @@ for a full description of labeling methodology and limitations.
 
 ---
 
-## Decision 5: Output scope — components + score + flag only
+## Decision 5: Output scope — components + score + flag + zone
 
 **Choice:** Return only: `corp_code, year, dsri, gmi, aqi, sgi, depi, sgai,
-lvgi, tata, m_score, flag`.
+lvgi, tata, m_score, flag, zone`.
+
+The `zone` column provides the standard Beneish three-level interpretation
+using fixed boundaries: `"clean"` (< −2.00), `"caution"` (−2.00 to −1.78),
+`"flagged"` (> −1.78), or `None` when `m_score` is NaN. Zone boundaries are
+independent of the `threshold` parameter — `flag` handles the parameterised
+binary; `zone` always reflects the documented Beneish interpretation zones.
 
 **Excluded from output:**
 - `sector_percentile` — requires WICS sector codes (external data)
 - `risk_tier` (Low/Medium/High/Critical) — tiering logic belongs to the caller
 - `dart_link` — URL construction depends on the application (web vs. script)
 - `high_fp_risk` — sector-specific biotech/pharma flag needs sector codes
-- `fs_type_switched` — pipeline-level enrichment (tracks CFS↔OFS changes)
 - `extraction_date` — metadata, not a Beneish output
 
 **Why this choice:**

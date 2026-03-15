@@ -30,6 +30,7 @@ _OUTPUT_COLUMNS = [
     "tata",
     "m_score",
     "flag",
+    "zone",
 ]
 
 
@@ -65,11 +66,15 @@ def compute_mscores(
     pd.DataFrame
         One row per company-year where T-1 data is available. Columns:
             corp_code, year, dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata,
-            m_score, flag
+            m_score, flag, zone
 
         m_score is NaN for first-year rows (no prior year available) and for
         rows where more than 2 of the 5 core components are null.
         flag is False when m_score is NaN.
+
+        zone is a fixed three-level Beneish interpretation (independent of
+        threshold): "clean" (< -2.00), "caution" (-2.00 to -1.78),
+        "flagged" (> -1.78), or None when m_score is NaN.
 
     Examples
     --------

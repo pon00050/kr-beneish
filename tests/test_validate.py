@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import pytest
 import pandas as pd
 
@@ -72,3 +74,53 @@ class TestValidateInput:
     def test_required_columns_list_has_14_items(self):
         """REQUIRED_COLUMNS must contain exactly 14 entries per the API contract."""
         assert len(REQUIRED_COLUMNS) == 14
+
+
+def _make_row(corp_code: str, year: int, fs_type: str) -> dict:
+    """Valid row with overridden corp_code, year, and fs_type."""
+    row = _make_valid_row()
+    row.update({"corp_code": corp_code, "year": year, "fs_type": fs_type})
+    return row
+
+
+class TestFsTypeConsistencyWarning:
+    def test_mixed_fs_type_emits_warning(self):
+        """A company with CFS in one year and OFS in another triggers UserWarning."""
+        df = pd.DataFrame([
+            _make_row("C001", 2019, "CFS"),
+            _make_row("C001", 2020, "OFS"),
+        ])
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            validate_input(df)
+        messages = [str(w.message) for w in caught if issubclass(w.category, UserWarning)]
+        assert any("C001" in m for m in messages), (
+            f"Expected warning mentioning C001, got: {messages}"
+        )
+
+    def test_consistent_fs_type_no_warning(self):
+        """Consistent fs_type across years produces no UserWarning."""
+        df = pd.DataFrame([
+            _make_row("C001", 2019, "CFS"),
+            _make_row("C001", 2020, "CFS"),
+        ])
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            validate_input(df)
+        user_warnings = [w for w in caught if issubclass(w.category, UserWarning)]
+        assert not user_warnings
+
+    def test_mixed_fs_type_names_affected_companies(self):
+        """Warning message includes the corp_code of the offending company."""
+        df = pd.DataFrame([
+            _make_row("MIXED001", 2019, "CFS"),
+            _make_row("MIXED001", 2020, "OFS"),
+            _make_row("CLEAN001", 2019, "CFS"),
+            _make_row("CLEAN001", 2020, "CFS"),
+        ])
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            validate_input(df)
+        messages = [str(w.message) for w in caught if issubclass(w.category, UserWarning)]
+        assert any("MIXED001" in m for m in messages)
+        assert not any("CLEAN001" in m for m in messages)
