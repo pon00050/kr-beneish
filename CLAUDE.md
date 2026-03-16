@@ -39,6 +39,14 @@ Internal pipeline:
 
 Source layout: `src/kr_beneish/`. Package data: `src/kr_beneish/data/labels.csv`.
 
+## Known Gaps
+
+| Gap | Why | Status |
+|-----|-----|--------|
+| `_components.py` `shift(1)` doesn't guard non-consecutive years | Gap years (e.g., 2019→2021) silently pair T with T-2, producing incorrect ratios | Unblocked — bug risk |
+| No `test_datasets.py` for `load_labels()` | `importlib.resources` packaging-sensitive code untested | Unblocked |
+| Labeled dataset (n=30) too small for publication-grade calibration | Bootstrap CI is wide: [-3.50, -1.60]; see `docs/calibration.md` | By design — needs more labeled cases |
+
 ## What Stays Out
 
 These are pipeline-layer features, NOT in this library:
