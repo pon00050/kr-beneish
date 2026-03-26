@@ -9,7 +9,7 @@ Part of the Korean forensic accounting toolkit.
 - Task board: https://github.com/users/pon00050/projects/1
 - Role: Foundation library
 - Depends on: none
-- Consumed by: kr-forensic-finance (Beneish M-Score computation in Phase 1 analysis)
+- Consumed by: krff-shell (Beneish M-Score computation)
 
 ## Common Commands
 
@@ -69,7 +69,7 @@ do not change without updating `test_known_values.py`.
 
 ## Commit Protocol
 
-Same as kr-forensic-finance:
+Same as krff-shell:
 1. `uv run pytest tests/ -v` — all green
 2. Stage specific files by name
 3. Commit and push
