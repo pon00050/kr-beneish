@@ -1,6 +1,6 @@
 """test_known_values.py — Regression tests against hand-calculated reference values.
 
-Ported from kr-forensic-finance TestBeneishFormula.test_m_score_known_input.
+Ported from the pre-split forensic monolith (now this standalone library).
 These tests lock in the exact formula implementation as executable specification
 and guard against accidental coefficient or sign changes during refactors.
 

@@ -19,7 +19,7 @@ potentially TATA (when capitalised R&D exceeds amortisation).
 history, ~60–70% were flagged at the −1.78 threshold in at least one year.
 
 **How to handle:**
-Use sector codes to post-filter results. The kr-forensic-finance pipeline
+Use sector codes to post-filter results. The krff-shell pipeline
 sets a `high_fp_risk` flag for WICS G3510/G3520 companies. This library
 does not include that flag (it requires sector data not in the 14-column input).
 

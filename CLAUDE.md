@@ -69,7 +69,6 @@ do not change without updating `test_known_values.py`.
 
 ## Commit Protocol
 
-Same as krff-shell:
 1. `uv run pytest tests/ -v` — all green
 2. Stage specific files by name
 3. Commit and push
