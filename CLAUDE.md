@@ -39,6 +39,10 @@ Internal pipeline:
 
 Source layout: `src/kr_beneish/`. Package data: `src/kr_beneish/data/labels.csv`.
 
+Modules:
+- `_validate.py`, `_components.py`, `_winsorize.py`, `_score.py` — internal pipeline (see above)
+- `datasets.py` — `load_labels()`: loads `data/labels.csv` via `importlib.resources`; returns DataFrame with `corp_code`, `fraud_label`, `company_name` (30 cases: 17 fraud, 13 clean)
+
 ## Known Gaps
 
 | Gap | Why | Status |
