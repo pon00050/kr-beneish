@@ -2,8 +2,8 @@
 
 Beneish M-Score for Korean IFRS (KOSPI/KOSDAQ) companies.
 
-```python
-pip install kr-beneish
+```bash
+uv add git+https://github.com/pon00050/kr-beneish
 ```
 
 ```python

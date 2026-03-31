@@ -56,6 +56,14 @@ def compute_components(df: pd.DataFrame) -> pd.DataFrame:
     for col in _LAG_COLS:
         df[f"{col}_l"] = df.groupby("corp_code")[col].shift(1)
 
+    # Guard against non-consecutive years: if the prior row is not year-1,
+    # the lag is invalid (e.g. company missing 2020, so 2021 would pair with
+    # 2019). Set all lag columns to NaN for those rows.
+    year_l = df.groupby("corp_code")["year"].shift(1)
+    non_consecutive = year_l.notna() & (year_l != df["year"] - 1)
+    for col in _LAG_COLS:
+        df.loc[non_consecutive, f"{col}_l"] = np.nan
+
     # Safe denominators (zero → NaN to avoid Inf)
     rev = df["revenue"].replace(0, np.nan)
     rev_l = df["revenue_l"].replace(0, np.nan)
