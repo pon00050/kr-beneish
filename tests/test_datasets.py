@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import io
+
 import pandas as pd
 import pytest
 
@@ -52,3 +54,71 @@ class TestLoadLabels:
         df2 = load_labels()
         df1.loc[0, "fraud_label"] = 999
         assert df2.loc[0, "fraud_label"] != 999
+
+
+class TestLoadLabelsFixtures:
+    """Fixture-based isolation tests that monkeypatch importlib.resources.files().
+
+    These tests decouple load_labels() from the bundled data file so that the
+    happy path, missing-file, and malformed-CSV branches can be exercised
+    independently of the real labels.csv.
+    """
+
+    @pytest.fixture()
+    def _patch_files(self, monkeypatch):
+        """Factory fixture: call with a CSV string; patches files() for the test."""
+
+        def _apply(content: str) -> None:
+            class _Ctx:
+                def __enter__(self_) -> io.StringIO:
+                    return io.StringIO(content)
+
+                def __exit__(self_, *a: object) -> None:
+                    pass
+
+            class _Traversable:
+                def joinpath(self_, *a: object) -> "_Traversable":
+                    return self_
+
+                def open(self_, mode: str = "r", encoding: str | None = None) -> _Ctx:
+                    return _Ctx()
+
+            monkeypatch.setattr(
+                "kr_beneish.datasets.files", lambda _pkg: _Traversable()
+            )
+
+        return _apply
+
+    def test_happy_path_with_fixture(self, _patch_files: object) -> None:
+        """Happy path: fixture-provided valid CSV loads into a correct DataFrame."""
+        _patch_files(
+            "corp_code,fraud_label,company_name\n"
+            "10001,1,테스트회사A\n"
+            "20002,0,테스트회사B\n"
+        )
+        df = load_labels()
+        assert isinstance(df, pd.DataFrame)
+        assert {"corp_code", "fraud_label", "company_name"}.issubset(df.columns)
+        assert len(df) == 2
+
+    def test_missing_file_raises_file_not_found(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """FileNotFoundError propagates when the bundled labels.csv is absent."""
+
+        class _Missing:
+            def joinpath(self, *a: object) -> "_Missing":
+                return self
+
+            def open(self, mode: str = "r", encoding: str | None = None) -> None:
+                raise FileNotFoundError("labels.csv not found")
+
+        monkeypatch.setattr("kr_beneish.datasets.files", lambda _pkg: _Missing())
+        with pytest.raises(FileNotFoundError):
+            load_labels()
+
+    def test_malformed_csv_raises_parser_error(self, _patch_files: object) -> None:
+        """pd.errors.ParserError raised when CSV contains an unclosed quoted field."""
+        _patch_files(
+            'corp_code,fraud_label,company_name\n10001,"unclosed,Company\n'
+        )
+        with pytest.raises(pd.errors.ParserError):
+            load_labels()
