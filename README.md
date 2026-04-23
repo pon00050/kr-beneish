@@ -1,5 +1,7 @@
 # kr-beneish
 
+**[Read the full write-up →](https://ronanwrites.vercel.app/manuals/beneish-mscore-korean-ifrs)**
+
 Beneish M-Score for Korean IFRS (KOSPI/KOSDAQ) companies.
 
 ```bash
